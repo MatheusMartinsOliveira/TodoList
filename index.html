@@ -1,11 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Todo List</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
+
 <body>
-    
+    <main>
+        <div class="container">
+            <div class="card">
+                <h1>Minha lista de tarefas</h1>
+
+                <div class="lista-container">
+                    <table id="tabelaTarefas" class="tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tarefa</th>
+                                <th>Descrição</th>
+                                <th>Data</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyTarefas"></tbody>
+                    </table>
+                    <p hidden id="aviso">Nenhuma tarefa por aqui!</p>
+                </div>
+
+                <form id="formTarefas">
+                    <label for="tarefa">Tarefa: </label>
+                    <input type="text" id="tarefa"><br><br>
+                    <label for="descricao">Descricao:</label>
+                    <input type="text" id="descricao"><br><br>
+                    <label for="data">Data:</label>
+                    <input type="date" id="data"><br><br>
+                    <button type="submit" id="adicionar">Adicionar tarefa</button>
+                </form>
+                <p hidden id="erro"></p>
+            </div>
+        </div>
+    </main>
+    <script src="./js/script.js"></script>
 </body>
+
 </html>
