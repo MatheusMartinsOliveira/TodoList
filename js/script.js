@@ -9,6 +9,11 @@ const erro = document.querySelector("#erro");
 const aviso = document.querySelector("#aviso");
 let proximoNumero = 1;
 
+function formatarData(data) {
+    const [ano, mes, dia] = data.split("-");
+    return `${dia}/${mes}/${ano}`;
+}
+
 function renderizarLista() {
     corpoTabela.innerHTML = "";
 
@@ -27,23 +32,50 @@ function renderizarLista() {
 
         const celulaTarefa = document.createElement("td");
         celulaTarefa.textContent = item.tarefa;
+        if (item.concluida) {
+            celulaTarefa.classList.add("concluida");
+        }
 
         const celulaDescricao = document.createElement("td");
         celulaDescricao.textContent = item.descricao;
+        if (item.concluida) {
+            celulaDescricao.classList.add("concluida");
+        }
 
         const celulaData = document.createElement("td");
-        celulaData.textContent = item.data;
+        celulaData.textContent = formatarData(item.data);
+        if (item.concluida) {
+            celulaData.classList.add("concluida");
+        }
 
         const celulaAcao = document.createElement("td");
+        const containerAcoes = document.createElement("div");
+        containerAcoes.className = "acao-container";
+
         const botaoExcluir = document.createElement("button");
+        const botaoConfirmar = document.createElement("button");
+
         botaoExcluir.type = "button";
-        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.className = "acao-btn excluir";
+        botaoExcluir.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        botaoExcluir.setAttribute("aria-label", "Excluir tarefa");
         botaoExcluir.addEventListener("click", () => {
             tarefas = tarefas.filter(tarefa => tarefa.id !== item.id);
             renderizarLista();
         });
 
-        celulaAcao.append(botaoExcluir);
+        botaoConfirmar.type = "button";
+        botaoConfirmar.className = "acao-btn confirmar";
+        botaoConfirmar.innerHTML = '<i class="fa-solid fa-check"></i>';
+        botaoConfirmar.setAttribute("aria-label", "Concluir tarefa");
+        botaoConfirmar.style.display = item.concluida ? "none" : "inline-flex";
+        botaoConfirmar.addEventListener("click", () => {
+            item.concluida = !item.concluida;
+            renderizarLista();
+        });
+
+        containerAcoes.append(botaoConfirmar, botaoExcluir);
+        celulaAcao.append(containerAcoes);
 
         linha.append(celulaId);
         linha.append(celulaTarefa);
@@ -62,7 +94,7 @@ formTarefas.addEventListener("submit", (event) => {
     const descricao = campoDescricao.value.trim();
     const data = campoData.value.trim();
 
-    if(tarefa === "" || descricao === "" || data === "") {
+    if(tarefa === "" || data === "") {
         erro.textContent = "Preencha os campos!";
         erro.hidden = false;
         return;
@@ -72,7 +104,8 @@ formTarefas.addEventListener("submit", (event) => {
         id: proximoNumero,
         tarefa: tarefa,
         descricao: descricao,
-        data: data
+        data: data,
+        concluida: false
     })
     proximoNumero++;
     erro.hidden = true;
