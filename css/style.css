@@ -124,6 +124,10 @@ h1 {
     background: linear-gradient(135deg, #34d399, #22c55e);
 }
 
+.tabela .acao-btn.editar {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
 .tabela td.concluida {
     text-decoration: line-through;
     color: #6b7280;

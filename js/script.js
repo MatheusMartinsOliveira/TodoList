@@ -8,10 +8,25 @@ const campoData = document.querySelector("#data");
 const erro = document.querySelector("#erro");
 const aviso = document.querySelector("#aviso");
 let proximoNumero = 1;
+let tarefaEmEdicaoId = null;
 
 function formatarData(data) {
     const [ano, mes, dia] = data.split("-");
     return `${dia}/${mes}/${ano}`;
+}
+
+function resetarBotaoFormulario() {
+    botao.innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar tarefa';
+    tarefaEmEdicaoId = null;
+}
+
+function preencherFormularioEdicao(item) {
+    tarefaEmEdicaoId = item.id;
+    campoTarefa.value = item.tarefa;
+    campoDescricao.value = item.descricao;
+    campoData.value = item.data;
+    botao.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar tarefa';
+    campoTarefa.focus();
 }
 
 function renderizarLista() {
@@ -52,8 +67,17 @@ function renderizarLista() {
         const containerAcoes = document.createElement("div");
         containerAcoes.className = "acao-container";
 
+        const botaoEditar = document.createElement("button");
         const botaoExcluir = document.createElement("button");
         const botaoConfirmar = document.createElement("button");
+
+        botaoEditar.type = "button";
+        botaoEditar.className = "acao-btn editar";
+        botaoEditar.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+        botaoEditar.setAttribute("aria-label", "Editar tarefa");
+        botaoEditar.addEventListener("click", () => {
+            preencherFormularioEdicao(item);
+        });
 
         botaoExcluir.type = "button";
         botaoExcluir.className = "acao-btn excluir";
@@ -61,6 +85,10 @@ function renderizarLista() {
         botaoExcluir.setAttribute("aria-label", "Excluir tarefa");
         botaoExcluir.addEventListener("click", () => {
             tarefas = tarefas.filter(tarefa => tarefa.id !== item.id);
+            if (tarefaEmEdicaoId === item.id) {
+                formTarefas.reset();
+                resetarBotaoFormulario();
+            }
             renderizarLista();
         });
 
@@ -74,7 +102,7 @@ function renderizarLista() {
             renderizarLista();
         });
 
-        containerAcoes.append(botaoConfirmar, botaoExcluir);
+        containerAcoes.append(botaoConfirmar, botaoEditar, botaoExcluir);
         celulaAcao.append(containerAcoes);
 
         linha.append(celulaId);
@@ -100,19 +128,31 @@ formTarefas.addEventListener("submit", (event) => {
         return;
     }
 
-    tarefas.push({
-        id: proximoNumero,
-        tarefa: tarefa,
-        descricao: descricao,
-        data: data,
-        concluida: false
-    })
-    proximoNumero++;
+    if (tarefaEmEdicaoId !== null) {
+        const tarefaAtual = tarefas.find(item => item.id === tarefaEmEdicaoId);
+
+        if (tarefaAtual) {
+            tarefaAtual.tarefa = tarefa;
+            tarefaAtual.descricao = descricao;
+            tarefaAtual.data = data;
+        }
+    } else {
+        tarefas.push({
+            id: proximoNumero,
+            tarefa: tarefa,
+            descricao: descricao,
+            data: data,
+            concluida: false
+        });
+        proximoNumero++;
+    }
+
     erro.hidden = true;
     formTarefas.reset();
+    resetarBotaoFormulario();
     campoTarefa.focus();
     renderizarLista();
-})
+});
 
 renderizarLista();
 
