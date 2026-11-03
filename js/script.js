@@ -1,4 +1,21 @@
-let tarefas = [];
+const CHAVE = "tarefas";
+const salvar = () => {
+  localStorage.setItem(CHAVE, JSON.stringify(tarefas));
+};
+
+const carregar = () => {
+  const texto = localStorage.getItem(CHAVE);
+  if (texto === null) {
+    return [];
+  }
+  try {
+    return JSON.parse(texto);
+  } catch (erro) {
+    console.warn("Erro ao carregar tarefas do localStorage:", erro);
+    return [];
+  }
+};
+let tarefas = carregar();
 const campoTarefa = document.querySelector("#tarefa");
 const botao = document.querySelector("#adicionar");
 const corpoTabela = document.querySelector("#tbodyTarefas");
@@ -7,152 +24,156 @@ const campoDescricao = document.querySelector("#descricao");
 const campoData = document.querySelector("#data");
 const erro = document.querySelector("#erro");
 const aviso = document.querySelector("#aviso");
-let proximoNumero = 1;
+let proximoNumero = Date.now();
 let tarefaEmEdicaoId = null;
 
 function formatarData(data) {
-    const [ano, mes, dia] = data.split("-");
-    return `${dia}/${mes}/${ano}`;
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
 }
 
 function resetarBotaoFormulario() {
-    botao.innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar tarefa';
-    tarefaEmEdicaoId = null;
+  botao.innerHTML = '<i class="fa-solid fa-plus"></i> Adicionar tarefa';
+  tarefaEmEdicaoId = null;
 }
 
 function preencherFormularioEdicao(item) {
-    tarefaEmEdicaoId = item.id;
-    campoTarefa.value = item.tarefa;
-    campoDescricao.value = item.descricao;
-    campoData.value = item.data;
-    botao.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar tarefa';
-    campoTarefa.focus();
+  tarefaEmEdicaoId = item.id;
+  campoTarefa.value = item.tarefa;
+  campoDescricao.value = item.descricao;
+  campoData.value = item.data;
+  botao.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar tarefa';
+  campoTarefa.focus();
 }
 
 function renderizarLista() {
-    corpoTabela.innerHTML = "";
+  corpoTabela.innerHTML = "";
 
-    if (tarefas.length === 0) {
-        aviso.hidden = false;
-        return;
+  if (tarefas.length === 0) {
+    aviso.hidden = false;
+    return;
+  }
+
+  aviso.hidden = true;
+
+  tarefas.forEach((item) => {
+    const linha = document.createElement("tr");
+
+    const celulaId = document.createElement("td");
+    celulaId.textContent = item.id;
+
+    const celulaTarefa = document.createElement("td");
+    celulaTarefa.textContent = item.tarefa;
+    if (item.concluida) {
+      celulaTarefa.classList.add("concluida");
     }
 
-    aviso.hidden = true;
+    const celulaDescricao = document.createElement("td");
+    celulaDescricao.textContent = item.descricao;
+    if (item.concluida) {
+      celulaDescricao.classList.add("concluida");
+    }
 
-    tarefas.forEach(item => {
-        const linha = document.createElement("tr");
+    const celulaData = document.createElement("td");
+    celulaData.textContent = formatarData(item.data);
+    if (item.concluida) {
+      celulaData.classList.add("concluida");
+    }
 
-        const celulaId = document.createElement("td");
-        celulaId.textContent = item.id;
+    const celulaAcao = document.createElement("td");
+    const containerAcoes = document.createElement("div");
+    containerAcoes.className = "acao-container";
 
-        const celulaTarefa = document.createElement("td");
-        celulaTarefa.textContent = item.tarefa;
-        if (item.concluida) {
-            celulaTarefa.classList.add("concluida");
-        }
+    const botaoEditar = document.createElement("button");
+    const botaoExcluir = document.createElement("button");
+    const botaoConfirmar = document.createElement("button");
 
-        const celulaDescricao = document.createElement("td");
-        celulaDescricao.textContent = item.descricao;
-        if (item.concluida) {
-            celulaDescricao.classList.add("concluida");
-        }
-
-        const celulaData = document.createElement("td");
-        celulaData.textContent = formatarData(item.data);
-        if (item.concluida) {
-            celulaData.classList.add("concluida");
-        }
-
-        const celulaAcao = document.createElement("td");
-        const containerAcoes = document.createElement("div");
-        containerAcoes.className = "acao-container";
-
-        const botaoEditar = document.createElement("button");
-        const botaoExcluir = document.createElement("button");
-        const botaoConfirmar = document.createElement("button");
-
-        botaoEditar.type = "button";
-        botaoEditar.className = "acao-btn editar";
-        botaoEditar.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
-        botaoEditar.setAttribute("aria-label", "Editar tarefa");
-        botaoEditar.addEventListener("click", () => {
-            preencherFormularioEdicao(item);
-        });
-
-        botaoExcluir.type = "button";
-        botaoExcluir.className = "acao-btn excluir";
-        botaoExcluir.innerHTML = '<i class="fa-solid fa-trash"></i>';
-        botaoExcluir.setAttribute("aria-label", "Excluir tarefa");
-        botaoExcluir.addEventListener("click", () => {
-            tarefas = tarefas.filter(tarefa => tarefa.id !== item.id);
-            if (tarefaEmEdicaoId === item.id) {
-                formTarefas.reset();
-                resetarBotaoFormulario();
-            }
-            renderizarLista();
-        });
-
-        botaoConfirmar.type = "button";
-        botaoConfirmar.className = "acao-btn confirmar";
-        botaoConfirmar.innerHTML = '<i class="fa-solid fa-check"></i>';
-        botaoConfirmar.setAttribute("aria-label", "Concluir tarefa");
-        botaoConfirmar.style.display = item.concluida ? "none" : "inline-flex";
-        botaoConfirmar.addEventListener("click", () => {
-            item.concluida = !item.concluida;
-            renderizarLista();
-        });
-
-        containerAcoes.append(botaoConfirmar, botaoEditar, botaoExcluir);
-        celulaAcao.append(containerAcoes);
-
-        linha.append(celulaId);
-        linha.append(celulaTarefa);
-        linha.append(celulaDescricao);
-        linha.append(celulaData);
-        linha.append(celulaAcao);
-
-        corpoTabela.append(linha);
+    botaoEditar.type = "button";
+    botaoEditar.className = "acao-btn editar";
+    botaoEditar.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+    botaoEditar.setAttribute("aria-label", "Editar tarefa");
+    botaoEditar.addEventListener("click", () => {
+      preencherFormularioEdicao(item);
     });
+
+    botaoExcluir.type = "button";
+    botaoExcluir.className = "acao-btn excluir";
+    botaoExcluir.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    botaoExcluir.setAttribute("aria-label", "Excluir tarefa");
+    botaoExcluir.addEventListener("click", () => {
+      tarefas = tarefas.filter((tarefa) => tarefa.id !== item.id);
+      if (tarefaEmEdicaoId === item.id) {
+        formTarefas.reset();
+        resetarBotaoFormulario();
+      }
+      renderizarLista();
+    });
+
+    botaoConfirmar.type = "button";
+    botaoConfirmar.className = "acao-btn confirmar";
+    botaoConfirmar.innerHTML = '<i class="fa-solid fa-check"></i>';
+    botaoConfirmar.setAttribute("aria-label", "Concluir tarefa");
+    botaoConfirmar.style.display = item.concluida ? "none" : "inline-flex";
+    botaoConfirmar.addEventListener("click", () => {
+      item.concluida = !item.concluida;
+      renderizarLista();
+    });
+
+    containerAcoes.append(botaoConfirmar, botaoEditar, botaoExcluir);
+    celulaAcao.append(containerAcoes);
+
+    linha.append(celulaId);
+    linha.append(celulaTarefa);
+    linha.append(celulaDescricao);
+    linha.append(celulaData);
+    linha.append(celulaAcao);
+
+    corpoTabela.append(linha);
+  });
 }
-
+const atualizar = () => {
+  salvar();
+  renderizarLista();
+};
 formTarefas.addEventListener("submit", (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    const tarefa = campoTarefa.value.trim();
-    const descricao = campoDescricao.value.trim();
-    const data = campoData.value.trim();
+  const tarefa = campoTarefa.value.trim();
+  const descricao = campoDescricao.value.trim();
+  const data = campoData.value.trim();
 
-    if(tarefa === "" || data === "") {
-        erro.textContent = "Preencha os campos!";
-        erro.hidden = false;
-        return;
+  if (tarefa === "" || data === "") {
+    erro.textContent = "Preencha os campos!";
+    erro.hidden = false;
+    return;
+  }
+
+  if (tarefaEmEdicaoId !== null) {
+    const tarefaAtual = tarefas.find((item) => item.id === tarefaEmEdicaoId);
+
+    if (tarefaAtual) {
+      tarefaAtual.tarefa = tarefa;
+      tarefaAtual.descricao = descricao;
+      tarefaAtual.data = data;
     }
+  } else {
+    tarefas.push({
+      id: proximoNumero,
+      tarefa: tarefa,
+      descricao: descricao,
+      data: data,
+      concluida: false,
+    });
+    proximoNumero++;
+  }
 
-    if (tarefaEmEdicaoId !== null) {
-        const tarefaAtual = tarefas.find(item => item.id === tarefaEmEdicaoId);
-
-        if (tarefaAtual) {
-            tarefaAtual.tarefa = tarefa;
-            tarefaAtual.descricao = descricao;
-            tarefaAtual.data = data;
-        }
-    } else {
-        tarefas.push({
-            id: proximoNumero,
-            tarefa: tarefa,
-            descricao: descricao,
-            data: data,
-            concluida: false
-        });
-        proximoNumero++;
-    }
-
-    erro.hidden = true;
-    formTarefas.reset();
-    resetarBotaoFormulario();
-    campoTarefa.focus();
-    renderizarLista();
+  erro.hidden = true;
+  formTarefas.reset();
+  resetarBotaoFormulario();
+  campoTarefa.focus();
+  renderizarLista();
+  atualizar();
 });
 
 renderizarLista();
-
+atualizar();
